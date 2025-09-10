@@ -21,7 +21,7 @@ function Header({
         <div className="flex justify-between items-center">
           {/* Logo Section */}
           <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-primary-500 rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-[rgb(216,104,104)] rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-sm">P</span>
             </div>
             <div>
@@ -40,7 +40,7 @@ function Header({
               onClick={() => setActiveTab("products")}
               className={`px-4 py-2 rounded-lg transition-colors duration-200 ${
                 activeTab === "products"
-                  ? "bg-primary-600 text-white"
+                  ? "bg-[rgb(216,104,104)] text-white"
                   : "text-gray-300 hover:text-white hover:bg-gray-800 dark:hover:bg-gray-700"
               }`}
             >
@@ -50,7 +50,7 @@ function Header({
               onClick={() => setActiveTab("orders")}
               className={`px-4 py-2 rounded-lg transition-colors duration-200 ${
                 activeTab === "orders"
-                  ? "bg-primary-600 text-white"
+                  ? "bg-[rgb(216,104,104)] text-white"
                   : "text-gray-300 hover:text-white hover:bg-gray-800 dark:hover:bg-gray-700"
               }`}
             >
@@ -60,7 +60,7 @@ function Header({
               onClick={() => setActiveTab("reports")}
               className={`px-4 py-2 rounded-lg transition-colors duration-200 ${
                 activeTab === "reports"
-                  ? "bg-primary-600 text-white"
+                  ? "bg-[rgb(216,104,104)] text-white"
                   : "text-gray-300 hover:text-white hover:bg-gray-800 dark:hover:bg-gray-700"
               }`}
             >
@@ -79,14 +79,16 @@ function Header({
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={2}
-                    d="M3 3h2l.4 2M7 13h10l4-8H5.4m-2.4 0L3 3m4 10v6a1 1 0 001 1h12a1 1 0 001-1v-6m-6-4a1 1 0 11-2 0m2 0V7a1 1 0 00-1-1H9a1 1 0 00-1 1v2"
+                    d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13l-1.35 2.7a1 1 0 00.9 1.5H19m0 0a2 2 0 100 4 2 2 0 000-4zm-10 2a2 2 0 11-4 0 2 2 0 014 0z"
                   />
                 </svg>
+
                 {cartItemsCount > 0 && (
                   <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                     {cartItemsCount}

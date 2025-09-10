@@ -1,17 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { productService } from '../services/productService';
 import { orderService } from '../services/orderService';
-import Header from './Header';
+import Sidebar from './Sidebar';
 import ProductList from './ProductList';
 import Cart from './Cart';
-import Orders from './Orders';
 import Reports from './Reports';
+import CategoryManagement from './CategoryManagement';
+import ProductManagement from './ProductManagement';
+import OrderManagement from './OrderManagement';
 
 function Dashboard({ user, onLogout }) {
   const [activeTab, setActiveTab] = useState('products');
   const [cartItems, setCartItems] = useState([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -73,10 +75,6 @@ function Dashboard({ user, onLogout }) {
     setCartItems([]);
   };
 
-  const toggleDarkMode = () => {
-    setIsDarkMode(prev => !prev);
-  };
-
   const toggleCart = () => {
     setIsCartOpen(prev => !prev);
   };
@@ -95,7 +93,11 @@ function Dashboard({ user, onLogout }) {
       case 'products':
         return <ProductList products={products} onAddToCart={addToCart} />;
       case 'orders':
-        return <Orders orders={orders} />;
+        return <OrderManagement />;
+      case 'categories':
+        return <CategoryManagement />;
+      case 'inventory':
+        return <ProductManagement />;
       case 'reports':
         return <Reports orders={orders} products={products} />;
       default:
@@ -104,31 +106,28 @@ function Dashboard({ user, onLogout }) {
   };
 
   return (
-    <div className={`min-h-screen transition-colors duration-200 ${isDarkMode ? 'dark bg-gray-900' : 'bg-gray-50'}`}>
-      <Header
+    <div className="min-h-screen bg-gray-50">
+      {/* Sidebar */}
+      <Sidebar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         cartItemsCount={cartItems.reduce((total, item) => total + item.quantity, 0)}
         toggleCart={toggleCart}
-        isDarkMode={isDarkMode}
-        toggleDarkMode={toggleDarkMode}
         user={user}
         onLogout={onLogout}
+        onCollapseChange={setIsSidebarCollapsed}
       />
 
-      <div className="container mx-auto px-4 py-6">
-        {/* Welcome Message */}
-        <div className="mb-6 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
-            Welcome back, {user?.firstName} {user?.lastName}!
-          </h1>
-          <p className="text-gray-600 dark:text-gray-300">
-            Role: <span className="font-medium capitalize">{user?.role}</span>
-          </p>
+      {/* Main Content Area */}
+      <div 
+        className={`min-h-screen transition-all duration-300 ${
+          isSidebarCollapsed ? 'ml-16' : 'ml-64'
+        }`}
+      >
+        <div className="px-6 py-6">
+          {/* Main Content */}
+          {renderContent()}
         </div>
-
-        {/* Main Content */}
-        {renderContent()}
       </div>
 
       {/* Cart Sidebar */}

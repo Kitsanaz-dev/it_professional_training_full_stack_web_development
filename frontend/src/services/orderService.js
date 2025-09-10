@@ -1,163 +1,253 @@
 import { ordersAPI } from './api';
 
-// Mock orders for fallback when API is not available (matches backend structure)
-const mockOrders = [
-  {
-    _id: '1',
-    orderNumber: 'ORD-20240115-001',
-    customer: null,
-    customerName: 'John Doe',
-    items: [
-      { 
-        _id: 'item1', 
-        product: '1', 
-        name: 'ເບຍລາວ', 
-        price: 25.00, 
-        quantity: 2, 
-        subtotal: 50.00 
-      },
-      { 
-        _id: 'item2', 
-        product: '2', 
-        name: 'ລາບປາ', 
-        price: 90.00, 
-        quantity: 1, 
-        subtotal: 90.00 
-      }
-    ],
-    subtotal: 140.00,
-    tax: 14.00,
-    discount: 0.00,
-    total: 154.00,
-    paymentMethod: 'cash',
-    status: 'completed',
-    paymentStatus: 'paid',
-    notes: '',
-    createdAt: '2024-01-15T10:30:00Z'
-  },
-  {
-    _id: '2',
-    orderNumber: 'ORD-20240115-002',
-    customer: null,
-    customerName: 'Jane Smith',
-    items: [
-      { 
-        _id: 'item3', 
-        product: '3', 
-        name: 'ຕຳໝາກຫຸ່ງ', 
-        price: 75.00, 
-        quantity: 1, 
-        subtotal: 75.00 
-      },
-      { 
-        _id: 'item4', 
-        product: '5', 
-        name: 'Heineken', 
-        price: 60.00, 
-        quantity: 1, 
-        subtotal: 60.00 
-      }
-    ],
-    subtotal: 135.00,
-    tax: 13.50,
-    discount: 5.00,
-    total: 143.50,
-    paymentMethod: 'card',
-    status: 'pending',
-    paymentStatus: 'unpaid',
-    notes: '',
-    createdAt: '2024-01-15T11:15:00Z'
-  },
-  {
-    _id: '3',
-    orderNumber: 'ORD-20240115-003',
-    customer: null,
-    customerName: 'Bob Wilson',
-    items: [
-      { 
-        _id: 'item5', 
-        product: '6', 
-        name: 'ຕົ້ມຊັບປີ້ງແບ້', 
-        price: 120.00, 
-        quantity: 1, 
-        subtotal: 120.00 
-      }
-    ],
-    subtotal: 120.00,
-    tax: 12.00,
-    discount: 0.00,
-    total: 132.00,
-    paymentMethod: 'cash',
-    status: 'cancelled',
-    paymentStatus: 'refunded',
-    notes: 'Customer cancelled',
-    createdAt: '2024-01-15T09:45:00Z'
-  }
-];
-
 export const orderService = {
-  // Get all orders - try API first, fallback to mock
-  getOrders: async () => {
+  // Get all orders with enhanced filtering
+  getAllOrders: async (params = {}) => {
     try {
-      const response = await ordersAPI.getAll();
-      // Backend returns { success: true, data: [...orders] }
-      return response.data.data || response.data;
-    } catch (error) {
-      console.log('API not available, using mock data:', error.message);
-      // Return mock data if API fails
-      return mockOrders;
-    }
-  },
+      console.log('🔄 Fetching orders...');
+      const response = await ordersAPI.getAll(params);
+      console.log('✅ Orders fetched successfully');
 
-  // Create order - try API first, fallback to mock
-  createOrder: async (orderData) => {
-    try {
-      const response = await ordersAPI.create(orderData);
-      return response.data || response;
-    } catch (error) {
-      console.log('API not available, using mock creation:', error.message);
-      // Simulate creation with mock data
-      const newOrder = {
-        id: `ORD-${String(mockOrders.length + 1).padStart(3, '0')}`,
-        ...orderData,
-        createdAt: new Date().toISOString(),
-        status: 'pending'
+      return {
+        success: true,
+        data: response.data || response || [],
+        message: 'Orders fetched successfully'
       };
-      mockOrders.unshift(newOrder); // Add to beginning
-      return newOrder;
-    }
-  },
-
-  // Update order status - try API first, fallback to mock
-  updateOrderStatus: async (id, status) => {
-    try {
-      const response = await ordersAPI.updateStatus(id, status);
-      return response.data || response;
     } catch (error) {
-      console.log('API not available, using mock update:', error.message);
-      // Simulate update with mock data
-      const order = mockOrders.find(o => o.id === id);
-      if (order) {
-        order.status = status;
-        return order;
-      }
-      throw new Error('Order not found');
+      console.error('❌ Failed to fetch orders:', error.message);
+      return {
+        success: false,
+        data: [],
+        message: error.response?.data?.message || 'Failed to fetch orders. Please check your connection and try again.',
+        error: error.response?.data
+      };
     }
   },
 
-  // Get order by ID - try API first, fallback to mock
+  // Backward compatibility
+  getOrders: async () => {
+    const result = await orderService.getAllOrders();
+    return result.data;
+  },
+
+  // Get order by ID
   getOrderById: async (id) => {
     try {
+      console.log(`🔄 Fetching order ${id}...`);
       const response = await ordersAPI.getById(id);
-      return response.data || response;
+      console.log('✅ Order fetched successfully');
+
+      return {
+        success: true,
+        data: response.data || response,
+        message: 'Order fetched successfully'
+      };
     } catch (error) {
-      console.log('API not available, using mock data:', error.message);
-      // Find in mock data
-      const order = mockOrders.find(o => o.id === id);
-      if (order) {
-        return order;
-      }
-      throw new Error('Order not found');
+      console.error(`❌ Failed to fetch order ${id}:`, error.message);
+      return {
+        success: false,
+        message: error.response?.data?.message || 'Failed to fetch order',
+        error: error.response?.data
+      };
     }
+  },
+
+  // Create order with enhanced validation and calculations
+  createOrder: async (orderData) => {
+    try {
+      console.log('🔄 Creating new order...', orderData);
+
+      // Calculate totals if not provided
+      const processedOrderData = {
+        ...orderData,
+        ...orderService.calculateOrderTotals(orderData)
+      };
+
+      const response = await ordersAPI.create(processedOrderData);
+      console.log('✅ Order created successfully');
+
+      return {
+        success: true,
+        data: response.data || response,
+        message: 'Order created successfully'
+      };
+    } catch (error) {
+      console.error('❌ Failed to create order:', error.message);
+      return {
+        success: false,
+        message: error.response?.data?.message || 'Failed to create order',
+        error: error.response?.data
+      };
+    }
+  },
+
+  // Update order
+  updateOrder: async (id, orderData) => {
+    try {
+      console.log(`🔄 Updating order ${id}...`, orderData);
+      const response = await ordersAPI.update(id, orderData);
+      console.log('✅ Order updated successfully');
+
+      return {
+        success: true,
+        data: response.data || response,
+        message: 'Order updated successfully'
+      };
+    } catch (error) {
+      console.error(`❌ Failed to update order ${id}:`, error.message);
+      return {
+        success: false,
+        message: error.response?.data?.message || 'Failed to update order',
+        error: error.response?.data
+      };
+    }
+  },
+
+  // Update order status
+  updateOrderStatus: async (id, status) => {
+    try {
+      console.log(`🔄 Updating order status ${id} to ${status}...`);
+      const response = await ordersAPI.updateStatus(id, status);
+      console.log('✅ Order status updated successfully');
+
+      return {
+        success: true,
+        data: response.data || response,
+        message: 'Order status updated successfully'
+      };
+    } catch (error) {
+      console.error(`❌ Failed to update order status ${id}:`, error.message);
+      return {
+        success: false,
+        message: error.response?.data?.message || 'Failed to update order status',
+        error: error.response?.data
+      };
+    }
+  },
+
+  // Calculate order totals
+  calculateOrderTotals: (orderData) => {
+    const { items = [], tax = 0, discount = 0 } = orderData;
+
+    // Calculate subtotal from items
+    const subtotal = items.reduce((sum, item) => {
+      return sum + (item.price * item.quantity);
+    }, 0);
+
+    // Calculate tax amount (can be percentage or fixed amount)
+    let taxAmount = tax;
+    if (orderData.taxRate) {
+      taxAmount = subtotal * (orderData.taxRate / 100);
+    }
+
+    // Calculate discount amount (can be percentage or fixed amount)
+    let discountAmount = discount;
+    if (orderData.discountRate) {
+      discountAmount = subtotal * (orderData.discountRate / 100);
+    }
+
+    // Calculate final total
+    const total = subtotal + taxAmount - discountAmount;
+
+    return {
+      subtotal: Math.round(subtotal * 100) / 100,
+      tax: Math.round(taxAmount * 100) / 100,
+      discount: Math.round(discountAmount * 100) / 100,
+      total: Math.round(total * 100) / 100
+    };
+  },
+
+  // Validate order data
+  validateOrder: (orderData) => {
+    const errors = {};
+
+    // Check required fields
+    if (!orderData.customerName || !orderData.customerName.trim()) {
+      errors.customerName = 'Customer name is required';
+    }
+
+    if (!orderData.items || orderData.items.length === 0) {
+      errors.items = 'At least one item is required';
+    }
+
+    if (!orderData.paymentMethod) {
+      errors.paymentMethod = 'Payment method is required';
+    }
+
+    // Validate items
+    if (orderData.items) {
+      orderData.items.forEach((item, index) => {
+        if (!item.product || !item.name) {
+          errors[`item_${index}`] = 'Invalid item data';
+        }
+        if (item.quantity <= 0) {
+          errors[`item_${index}_quantity`] = 'Item quantity must be greater than 0';
+        }
+        if (item.price < 0) {
+          errors[`item_${index}_price`] = 'Item price cannot be negative';
+        }
+      });
+    }
+
+    return {
+      isValid: Object.keys(errors).length === 0,
+      errors
+    };
+  },
+
+  // Process payment (simulation)
+  processPayment: async (orderData) => {
+    try {
+      console.log('🔄 Processing payment...', orderData.paymentMethod);
+
+      // Simulate payment processing delay
+      await new Promise(resolve => setTimeout(resolve, 1500));
+
+      // Simulate payment success/failure
+      const success = Math.random() > 0.1; // 90% success rate
+
+      if (success) {
+        console.log('✅ Payment processed successfully');
+        return {
+          success: true,
+          data: {
+            transactionId: `TXN-${Date.now()}`,
+            paymentMethod: orderData.paymentMethod,
+            amount: orderData.total,
+            status: 'completed'
+          },
+          message: 'Payment processed successfully'
+        };
+      } else {
+        console.log('❌ Payment failed');
+        return {
+          success: false,
+          message: 'Payment processing failed. Please try again.',
+          error: 'Payment gateway error'
+        };
+      }
+    } catch (error) {
+      return {
+        success: false,
+        message: 'Payment processing error',
+        error: error.message
+      };
+    }
+  },
+
+  // Generate receipt data
+  generateReceipt: (order) => {
+    return {
+      ...order,
+      receiptNumber: `RCP-${order.orderNumber}`,
+      printedAt: new Date().toISOString(),
+      cashier: JSON.parse(localStorage.getItem('user') || '{}'),
+      store: {
+        name: 'POS Store',
+        address: '123 Main Street',
+        phone: '+1 (555) 123-4567',
+        taxId: 'TAX123456789'
+      }
+    };
   }
 };

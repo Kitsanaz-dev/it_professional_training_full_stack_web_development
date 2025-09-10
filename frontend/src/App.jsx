@@ -1,15 +1,10 @@
 // src/App.jsx
-import React, { useState, useEffect } from "react";
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate,
-} from "react-router-dom";
-import { authService } from "./services/authService";
-import SimpleLogin from "./components/SimpleLogin";
-import SimpleRegister from "./components/SimpleRegister";
-import Dashboard from "./components/Dashboard";
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { authService } from './services/authService';
+import SimpleLogin from './components/SimpleLogin';
+import SimpleRegister from './components/SimpleRegister';
+import Dashboard from './components/Dashboard';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -39,23 +34,9 @@ function App() {
   };
 
   // Register function
-  const handleRegister = async (
-    firstName,
-    lastName,
-    email,
-    username,
-    password,
-    role
-  ) => {
+  const handleRegister = async (firstName, lastName, email, username, password, role) => {
     try {
-      const userData = await authService.register(
-        firstName,
-        lastName,
-        email,
-        username,
-        password,
-        role
-      );
+      const userData = await authService.register(firstName, lastName, email, username, password, role);
       setUser(userData);
       setIsLoggedIn(true);
       return { success: true };
@@ -89,22 +70,22 @@ function App() {
         {/* If not logged in, show login/register */}
         {!isLoggedIn ? (
           <>
-            <Route
-              path="/login"
-              element={<SimpleLogin onLogin={handleLogin} />}
+            <Route 
+              path="/login" 
+              element={<SimpleLogin onLogin={handleLogin} />} 
             />
-            <Route
-              path="/register"
-              element={<SimpleRegister onRegister={handleRegister} />}
+            <Route 
+              path="/register" 
+              element={<SimpleRegister onRegister={handleRegister} />} 
             />
             <Route path="*" element={<Navigate to="/login" replace />} />
           </>
         ) : (
           <>
             {/* If logged in, show dashboard */}
-            <Route
-              path="/"
-              element={<Dashboard user={user} onLogout={handleLogout} />}
+            <Route 
+              path="/" 
+              element={<Dashboard user={user} onLogout={handleLogout} />} 
             />
             <Route path="*" element={<Navigate to="/" replace />} />
           </>

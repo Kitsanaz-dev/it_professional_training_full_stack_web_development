@@ -1,143 +1,188 @@
 import { productsAPI } from './api';
 
-// Mock products for fallback when API is not available (matches backend structure)
-const mockProducts = [
-  { 
-    _id: '1', 
-    name: 'ເບຍລາວ', 
-    description: 'Traditional Lao beer',
-    price: 25.00, 
-    image: '/beerlao.jpg', 
-    category: { _id: 'cat1', name: 'Beverages', color: '#28a745' }, 
-    stock: 50,
-    barcode: '123456789001',
-    isActive: true,
-    createdAt: '2024-01-01T00:00:00.000Z'
-  },
-  { 
-    _id: '2', 
-    name: 'ລາບປາ', 
-    description: 'Spicy fish salad',
-    price: 90.00, 
-    image: '/larb.jpeg', 
-    category: { _id: 'cat2', name: 'Food', color: '#dc3545' }, 
-    stock: 25,
-    barcode: '123456789002',
-    isActive: true,
-    createdAt: '2024-01-01T00:00:00.000Z'
-  },
-  { 
-    _id: '3', 
-    name: 'ຕຳໝາກຫຸ່ງ', 
-    description: 'Green papaya salad',
-    price: 75.00, 
-    image: '/papayasalad.jpg', 
-    category: { _id: 'cat2', name: 'Food', color: '#dc3545' }, 
-    stock: 30,
-    barcode: '123456789003',
-    isActive: true,
-    createdAt: '2024-01-01T00:00:00.000Z'
-  },
-  { 
-    _id: '4', 
-    name: 'ຂ້າວໜຽວ', 
-    description: 'Sticky rice',
-    price: 15.00, 
-    image: '/sticky-rice.jpg', 
-    category: { _id: 'cat2', name: 'Food', color: '#dc3545' }, 
-    stock: 40,
-    barcode: '123456789004',
-    isActive: true,
-    createdAt: '2024-01-01T00:00:00.000Z'
-  },
-  { 
-    _id: '5', 
-    name: 'Heineken', 
-    description: 'Premium beer',
-    price: 60.00, 
-    image: '/heineken.jpg', 
-    category: { _id: 'cat1', name: 'Beverages', color: '#28a745' }, 
-    stock: 35,
-    barcode: '123456789005',
-    isActive: true,
-    createdAt: '2024-01-01T00:00:00.000Z'
-  },
-  { 
-    _id: '6', 
-    name: 'ຕົ້ມຊັບປີ້ງແບ້', 
-    description: 'Grilled fish soup',
-    price: 120.00, 
-    image: '/fish-soup.jpeg', 
-    category: { _id: 'cat2', name: 'Food', color: '#dc3545' }, 
-    stock: 20,
-    barcode: '123456789006',
-    isActive: true,
-    createdAt: '2024-01-01T00:00:00.000Z'
-  }
-];
-
 export const productService = {
-  // Get all products - try API first, fallback to mock
-  getProducts: async () => {
+  // Get all products with enhanced filtering and search
+  getAllProducts: async (params = {}) => {
     try {
-      const response = await productsAPI.getAll();
-      // Backend returns { success: true, data: [...products] }
-      return response.data.data || response.data;
+      console.log('🔄 Fetching products...');
+      const response = await productsAPI.getAll(params);
+      console.log('✅ Products fetched successfully');
+      
+      return {
+        success: true,
+        data: response.data || response || [],
+        message: 'Products fetched successfully'
+      };
     } catch (error) {
-      console.log('API not available, using mock data:', error.message);
-      // Return mock data if API fails - format to match backend response
-      return mockProducts;
+      console.error('❌ Failed to fetch products:', error.message);
+      return {
+        success: false,
+        data: [],
+        message: error.response?.data?.message || 'Failed to fetch products. Please check your connection and try again.',
+        error: error.response?.data
+      };
     }
   },
 
-  // Create product - try API first, fallback to mock
+  // Get products - backward compatibility
+  getProducts: async () => {
+    const result = await productService.getAllProducts();
+    return result.data;
+  },
+
+  // Get product by ID
+  getProductById: async (id) => {
+    try {
+      console.log(`🔄 Fetching product ${id}...`);
+      const response = await productsAPI.getById(id);
+      console.log('✅ Product fetched successfully');
+      
+      return {
+        success: true,
+        data: response.data || response,
+        message: 'Product fetched successfully'
+      };
+    } catch (error) {
+      console.error(`❌ Failed to fetch product ${id}:`, error.message);
+      return {
+        success: false,
+        message: error.response?.data?.message || 'Failed to fetch product',
+        error: error.response?.data
+      };
+    }
+  },
+
+  // Create product with enhanced validation
   createProduct: async (productData) => {
     try {
+      console.log('🔄 Creating new product...', productData);
       const response = await productsAPI.create(productData);
-      return response.data || response;
-    } catch (error) {
-      console.log('API not available, using mock creation:', error.message);
-      // Simulate creation with mock data
-      const newProduct = {
-        id: Date.now(),
-        ...productData
+      console.log('✅ Product created successfully');
+      
+      return {
+        success: true,
+        data: response.data || response,
+        message: 'Product created successfully'
       };
-      mockProducts.push(newProduct);
-      return newProduct;
+    } catch (error) {
+      console.error('❌ Failed to create product:', error.message);
+      return {
+        success: false,
+        message: error.response?.data?.message || 'Failed to create product',
+        error: error.response?.data
+      };
     }
   },
 
-  // Update product - try API first, fallback to mock
+  // Update product
   updateProduct: async (id, productData) => {
     try {
+      console.log(`🔄 Updating product ${id}...`, productData);
       const response = await productsAPI.update(id, productData);
-      return response.data || response;
+      console.log('✅ Product updated successfully');
+      
+      return {
+        success: true,
+        data: response.data || response,
+        message: 'Product updated successfully'
+      };
     } catch (error) {
-      console.log('API not available, using mock update:', error.message);
-      // Simulate update with mock data
-      const index = mockProducts.findIndex(p => p.id === id);
-      if (index !== -1) {
-        mockProducts[index] = { ...mockProducts[index], ...productData };
-        return mockProducts[index];
-      }
-      throw new Error('Product not found');
+      console.error(`❌ Failed to update product ${id}:`, error.message);
+      return {
+        success: false,
+        message: error.response?.data?.message || 'Failed to update product',
+        error: error.response?.data
+      };
     }
   },
 
-  // Delete product - try API first, fallback to mock
+  // Delete product
   deleteProduct: async (id) => {
     try {
+      console.log(`🔄 Deleting product ${id}...`);
       const response = await productsAPI.delete(id);
-      return response.data || response;
+      console.log('✅ Product deleted successfully');
+      
+      return {
+        success: true,
+        data: response.data || response,
+        message: 'Product deleted successfully'
+      };
     } catch (error) {
-      console.log('API not available, using mock deletion:', error.message);
-      // Simulate deletion with mock data
-      const index = mockProducts.findIndex(p => p.id === id);
-      if (index !== -1) {
-        mockProducts.splice(index, 1);
-        return { success: true };
+      console.error(`❌ Failed to delete product ${id}:`, error.message);
+      return {
+        success: false,
+        message: error.response?.data?.message || 'Failed to delete product',
+        error: error.response?.data
+      };
+    }
+  },
+
+  // Update stock levels
+  updateStock: async (id, stockData) => {
+    try {
+      console.log(`🔄 Updating stock for product ${id}...`, stockData);
+      
+      // Use PATCH endpoint for stock updates if available
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api'}/products/${id}/stock`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+        },
+        body: JSON.stringify(stockData)
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-      throw new Error('Product not found');
+      
+      const data = await response.json();
+      console.log('✅ Stock updated successfully');
+      
+      return {
+        success: true,
+        data: data.data || data,
+        message: 'Stock updated successfully'
+      };
+    } catch (error) {
+      console.error(`❌ Failed to update stock for product ${id}:`, error.message);
+      return {
+        success: false,
+        message: 'Failed to update stock',
+        error: error.message
+      };
+    }
+  },
+
+  // Search products by barcode
+  searchByBarcode: async (barcode) => {
+    try {
+      console.log(`🔄 Searching for barcode: ${barcode}`);
+      const result = await productService.getAllProducts({ search: barcode });
+      
+      if (result.success) {
+        const product = result.data.find(p => p.barcode === barcode);
+        if (product) {
+          return {
+            success: true,
+            data: product,
+            message: 'Product found by barcode'
+          };
+        }
+      }
+      
+      return {
+        success: false,
+        message: 'No product found with this barcode',
+        error: 'Not found'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: 'Failed to search by barcode',
+        error: error.message
+      };
     }
   }
 };
