@@ -10,6 +10,7 @@ const categoryRoutes = require('./routes/categoryRoute');
 const customerRoutes = require('./routes/customerRoute');
 const orderRoute = require('./routes/orderRoute');
 const userRoutes = require('./routes/userRoute');
+const cors = require('cors');
 
 const app = express();
 
@@ -18,6 +19,13 @@ app.use(morgan('combined'));
 
 // Security middleware
 app.use(helmet());
+
+// CORS middleware
+app.use(cors({
+    origin: "*",
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+  }))
 
 // Routes
 app.use(express.json());
