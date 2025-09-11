@@ -567,18 +567,13 @@ const ProductForm = ({ product = null, onSuccess, onCancel }) => {
                 <div className="flex items-start space-x-4">
                   <div className="flex-shrink-0">
                     <div className="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center">
-                      {formData.image ? (
+                      {formData.image && (
                         <img
                           src={formData.image}
                           alt="Preview"
                           className="w-16 h-16 object-cover rounded-lg"
-                          onError={(e) => {
-                            e.target.style.display = "none";
-                            e.target.nextSibling.style.display = "flex";
-                          }}
                         />
-                      ) : null}
-                      <span className="text-gray-400">📦</span>
+                      )}
                     </div>
                   </div>
                   <div className="flex-1 min-w-0">

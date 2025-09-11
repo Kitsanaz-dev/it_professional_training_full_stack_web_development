@@ -1,16 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import { productService } from '../services/productService';
-import { orderService } from '../services/orderService';
-import Sidebar from './Sidebar';
-import ProductList from './ProductList';
-import Cart from './Cart';
-import Reports from './Reports';
-import CategoryManagement from './CategoryManagement';
-import ProductManagement from './ProductManagement';
-import OrderManagement from './OrderManagement';
+import React, { useState, useEffect } from "react";
+import { productService } from "../services/productService";
+import { orderService } from "../services/orderService";
+import Sidebar from "./Sidebar";
+import ProductList from "./ProductList";
+import Cart from "./Cart";
+import Reports from "./Reports";
+import CategoryManagement from "./CategoryManagement";
+import ProductManagement from "./ProductManagement";
+import OrderManagement from "./OrderManagement";
 
 function Dashboard({ user, onLogout }) {
-  const [activeTab, setActiveTab] = useState('products');
+  const [activeTab, setActiveTab] = useState("products");
   const [cartItems, setCartItems] = useState([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -25,12 +25,13 @@ function Dashboard({ user, onLogout }) {
         setLoading(true);
         const [productsData, ordersData] = await Promise.all([
           productService.getProducts(),
-          orderService.getOrders()
+          orderService.getOrders(),
         ]);
+        console.log("📦 Loaded products data:", productsData);
         setProducts(productsData);
         setOrders(ordersData);
       } catch (error) {
-        console.error('Error loading data:', error);
+        console.error("Error loading data:", error);
       } finally {
         setLoading(false);
       }
@@ -40,35 +41,54 @@ function Dashboard({ user, onLogout }) {
   }, []);
 
   const addToCart = (product) => {
-    setCartItems(prevItems => {
-      const existingItem = prevItems.find(item => item.id === product.id);
+    console.log("🛒 Adding product to cart:", product);
+    setCartItems((prevItems) => {
+      console.log("📦 Current cart items:", prevItems);
+      const productId = product.id || product._id;
+      console.log("🔍 Looking for product with ID:", productId);
+
+      const existingItem = prevItems.find(
+        (item) => (item.id || item._id) === productId
+      );
+      console.log("🔍 Existing item found:", existingItem);
+
       if (existingItem) {
-        return prevItems.map(item =>
-          item.id === product.id
+        console.log("➕ Incrementing quantity for existing item");
+        return prevItems.map((item) =>
+          (item.id || item._id) === productId
             ? { ...item, quantity: item.quantity + 1 }
             : item
         );
       } else {
-        return [...prevItems, { ...product, quantity: 1 }];
+        console.log("🆕 Adding new item to cart");
+        const newCartItems = [...prevItems, { ...product, quantity: 1 }];
+        console.log("📋 New cart items:", newCartItems);
+        return newCartItems;
       }
     });
   };
 
   const updateCartItem = (productId, quantity) => {
-    setCartItems(prevItems => {
+    console.log("🔄 Updating item:", productId, "to quantity:", quantity);
+    setCartItems((prevItems) => {
       if (quantity <= 0) {
-        return prevItems.filter(item => item.id !== productId);
+        return prevItems.filter((item) => (item.id || item._id) !== productId);
       }
-      return prevItems.map(item =>
-        item.id === productId
-          ? { ...item, quantity }
-          : item
+      return prevItems.map((item) =>
+        (item.id || item._id) === productId ? { ...item, quantity } : item
       );
     });
   };
 
   const removeFromCart = (productId) => {
-    setCartItems(prevItems => prevItems.filter(item => item.id !== productId));
+    console.log("🗑️ Removing item with ID:", productId);
+    setCartItems((prevItems) => {
+      const newItems = prevItems.filter(
+        (item) => (item.id || item._id) !== productId
+      );
+      console.log("📋 Cart after removal:", newItems);
+      return newItems;
+    });
   };
 
   const clearCart = () => {
@@ -76,7 +96,7 @@ function Dashboard({ user, onLogout }) {
   };
 
   const toggleCart = () => {
-    setIsCartOpen(prev => !prev);
+    setIsCartOpen((prev) => !prev);
   };
 
   const renderContent = () => {
@@ -84,21 +104,23 @@ function Dashboard({ user, onLogout }) {
       return (
         <div className="flex items-center justify-center py-12">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
-          <span className="ml-3 text-gray-600 dark:text-gray-300">Loading...</span>
+          <span className="ml-3 text-gray-600 dark:text-gray-300">
+            Loading...
+          </span>
         </div>
       );
     }
 
     switch (activeTab) {
-      case 'products':
+      case "products":
         return <ProductList products={products} onAddToCart={addToCart} />;
-      case 'orders':
+      case "orders":
         return <OrderManagement />;
-      case 'categories':
+      case "categories":
         return <CategoryManagement />;
-      case 'inventory':
+      case "inventory":
         return <ProductManagement />;
-      case 'reports':
+      case "reports":
         return <Reports orders={orders} products={products} />;
       default:
         return <ProductList products={products} onAddToCart={addToCart} />;
@@ -111,7 +133,10 @@ function Dashboard({ user, onLogout }) {
       <Sidebar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
-        cartItemsCount={cartItems.reduce((total, item) => total + item.quantity, 0)}
+        cartItemsCount={cartItems.reduce(
+          (total, item) => total + item.quantity,
+          0
+        )}
         toggleCart={toggleCart}
         user={user}
         onLogout={onLogout}
@@ -119,9 +144,9 @@ function Dashboard({ user, onLogout }) {
       />
 
       {/* Main Content Area */}
-      <div 
+      <div
         className={`min-h-screen transition-all duration-300 ${
-          isSidebarCollapsed ? 'ml-16' : 'ml-64'
+          isSidebarCollapsed ? "ml-16" : "ml-64"
         }`}
       >
         <div className="px-6 py-6">

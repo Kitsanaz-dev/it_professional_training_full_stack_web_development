@@ -10,6 +10,7 @@ const categoryRoutes = require('./routes/categoryRoute');
 const customerRoutes = require('./routes/customerRoute');
 const orderRoute = require('./routes/orderRoute');
 const userRoutes = require('./routes/userRoute');
+const statsRoute = require('./routes/statsRoute');
 const cors = require('cors');
 
 const app = express();
@@ -44,5 +45,6 @@ app.use('/api/categories', categoryRoutes);
 app.use('/api/customers', customerRoutes);
 app.use('/api/orders', orderRoute);
 app.use('/api/users', userRoutes);
+app.use('/api/stats', statsRoute);
 
 module.exports = app;

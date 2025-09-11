@@ -384,18 +384,13 @@ const ProductCard = ({ product, onEdit, onDelete, onStockUpdate }) => {
       <div className="p-4">
         {/* Product Image */}
         <div className="w-full h-48 bg-gray-100 rounded-lg mb-4 flex items-center justify-center">
-          {product.image ? (
+          {product.image && (
             <img
               src={product.image}
               alt={product.name}
               className="w-full h-full object-cover rounded-lg"
-              onError={(e) => {
-                e.target.style.display = 'none';
-                e.target.nextSibling.style.display = 'flex';
-              }}
             />
-          ) : null}
-          <div className="text-gray-400 text-4xl">📦</div>
+          )}
         </div>
 
         {/* Product Info */}
@@ -479,18 +474,13 @@ const ProductRow = ({ product, onEdit, onDelete, onStockUpdate }) => {
         <div className="flex items-center">
           <div className="h-12 w-12 flex-shrink-0">
             <div className="h-12 w-12 bg-gray-100 rounded-lg flex items-center justify-center">
-              {product.image ? (
+              {product.image && (
                 <img
                   src={product.image}
                   alt={product.name}
                   className="h-12 w-12 object-cover rounded-lg"
-                  onError={(e) => {
-                    e.target.style.display = 'none';
-                    e.target.nextSibling.style.display = 'flex';
-                  }}
                 />
-              ) : null}
-              <span className="text-gray-400">📦</span>
+              )}
             </div>
           </div>
           <div className="ml-4">

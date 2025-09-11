@@ -18,10 +18,50 @@ const setTokens = (accessToken, refreshToken) => {
   localStorage.setItem('accessToken', accessToken);
   localStorage.setItem('refreshToken', refreshToken);
 };
+
+
 const clearTokens = () => {
   localStorage.removeItem('accessToken');
   localStorage.removeItem('refreshToken');
   localStorage.removeItem('user');
+};
+
+// Stats API calls
+export const statsAPI = {
+  getOverviewStats: async (period = '30') => {
+    const response = await apiClient.get('/stats/overview', {
+      params: { period }
+    });
+    return response.data;
+  },
+
+  getSalesStats: async (period = '30', groupBy = 'day') => {
+    const response = await apiClient.get('/stats/sales', {
+      params: { period, groupBy }
+    });
+    return response.data;
+  },
+
+  getProductStats: async (period = '30') => {
+    const response = await apiClient.get('/stats/products', {
+      params: { period }
+    });
+    return response.data;
+  },
+
+  getCustomerStats: async (period = '30') => {
+    const response = await apiClient.get('/stats/customers', {
+      params: { period }
+    });
+    return response.data;
+  },
+
+  getRevenueStats: async (period = '30', forecast = false) => {
+    const response = await apiClient.get('/stats/revenue', {
+      params: { period, forecast }
+    });
+    return response.data;
+  }
 };
 
 // Request interceptor to add auth token
